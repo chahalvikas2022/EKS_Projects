@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nodeid
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world-api
+  namespace: nodeid
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-world-api
+  template:
+    metadata:
+      labels:
+        app: hello-world-api
+    spec:
+      containers:
+      - name: hello-world-api
+        image: nmatsui/hello-world-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: POD_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name  # Gets Pod Name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP  # Gets Pod IP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName  # Gets Node Name
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting API with POD_ID=$POD_ID, POD_IP=$POD_IP, NODE_NAME=$NODE_NAME";
+          exec node -e "
+          const http = require('http');
+          const server = http.createServer((req, res) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              message: 'pod-id=' + process.env.POD_ID +
+                       ';pod-ip=' + process.env.POD_IP +
+                       ';node-name=' + process.env.NODE_NAME
+            }));
+          });
+          server.listen(3000);
+          console.log('Server running on port 3000');"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-api
+  namespace: nodeid
+spec:
+  selector:
+    app: hello-world-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
