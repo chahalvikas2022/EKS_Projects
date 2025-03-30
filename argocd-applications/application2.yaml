@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:aveeva-devops/projects.git
+    repoURL: https://github.com/chahalvikas2022/EKS_Projects.git
     targetRevision: HEAD
-    path: kubernetes/EKS-ArgoCD/app2
+    path: app2
   destination: 
     server: https://kubernetes.default.svc
     namespace: demo
