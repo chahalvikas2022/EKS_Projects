@@ -61,23 +61,26 @@ upgrades and configuration changes.
    6. Destory the cluster ``` terraform destroy ```
      
 ### Step 3 - Install ArgoCD
-   1.Install Helm Chart winget install Helm.Helm
+   1.Install Helm Chart 
+     winget install Helm.Helm
+     
    2. Restart VSS for helm to load
+      
    3. Add ArgoCD Helm Repository
         helm repo add argo https://argoproj.github.io/argo-helm
         helm repo update
    4. Create argocd namespace
        kubectl create namespace argocd
 
-   5. Install ArgoCD using helm
+   6. Install ArgoCD using helm
          helm install argocd argo/argo-cd --namespace argocd
-   6. Expose ArgoCD Using a LoadBalancer
+   7. Expose ArgoCD Using a LoadBalancer
        kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-   7. Get URL for ArgoCD
+   8. Get URL for ArgoCD
        kubectl get svc -n argocd
-  8. Retrieve Admin password for argoCD
+  9. Retrieve Admin password for argoCD
        kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
-  9. Login on ArgoCD - Open URL from Step 7 and put admin/password, where password coming from Step 8
+  10. Login on ArgoCD - Open URL from Step 7 and put admin/password, where password coming from Step 8
 
 Configure ArgoCD CLI (Optional)
 
