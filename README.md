@@ -61,19 +61,28 @@ upgrades and configuration changes.
    6. Destory the cluster ``` terraform destroy ```
      
 ### Step 3 - Install ArgoCD
+   1.Install Helm Chart 
+     winget install Helm.Helm
+     
+   2. Restart VSS for helm to load
+      
+   3. Add ArgoCD Helm Repository
+        helm repo add argo https://argoproj.github.io/argo-helm
+        helm repo update
+   4. Create argocd namespace
+       kubectl create namespace argocd
 
-  1. Create namespace ``` kubectl create namespace argocd ```
-  2. Install full argocd ``` kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ```
-  3. Ensure pods are created by ArgoCD ``` kubectl get pods -n argocd ```
-  4. Expose ArgoCD publickly ``` kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' ```
-  5. Load balancer will take some time.
-  6. Get URL of argoCD ``` kubectl get svc -n argocd ```
-  7. Get admin password of ArgoCD server ```export ARGO_PWD=`kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d` ```
-  8. Store ArgoCD server in variable ``` kubectl get svc argocd-server -n argocd -o json ```
-  9. export ARGOCD_SERVER="ae56c05bbad094a8a84f3c3526ea8004-1431413082.us-east-1.elb.amazonaws.com" where this value came from hostname of above step.
-  9. Download argocd CLI from ``` https://kostis-argo-cd.readthedocs.io/en/refresh-docs/getting_started/install_cli/```
-  10. Login to ArgoCD ``` ./argocd login $ARGOCD_SERVER --username admin --password $ARGO_PWD --insecure ```  
-  11. You can also login via browser using service endpoint from step 6. 
+   6. Install ArgoCD using helm
+         helm install argocd argo/argo-cd --namespace argocd
+   7. Expose ArgoCD Using a LoadBalancer
+       kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+   8. Get URL for ArgoCD
+       kubectl get svc -n argocd
+  9. Retrieve Admin password for argoCD
+       kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
+  10. Login on ArgoCD - Open URL from Step 7 and put admin/password, where password coming from Step 8
+
+Configure ArgoCD CLI (Optional)
 
 
 ### 4. Setup Sync with ArgoCD
