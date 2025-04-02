@@ -94,95 +94,9 @@ upgrades and configuration changes.
   ```
   kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
   ```
-  10. Login on ArgoCD - Open URL from Step 8 and put admin/password, where password coming from Step 9
-
-  11. Configure ArgoCD CLI (Optional)
 
 
-### Step 4. Setup ArgoCD CLI (Optional)
-
-  1. Open PowerShell and run: This downloads the latest ArgoCD CLI binary.
-  ``` 
-  Invoke-WebRequest -Uri https://github.com/argoproj/argo-cd/releases/latest/download/argocd-windows-amd64.exe -OutFile argocd.exe 
-  ```
-  2. Verify the Download
-  ```
-  .\argocd.exe version
-  ```
-  3. Move ArgoCD CLI to System Path - Rename the downloaded file to argocd.exe (if not already).
-  ```
-  Move-Item -Path .\argocd.exe -Destination "C:\Windows\System32\"
-  
-  Path Can be anything of your choice. 
-  ```
-  4. Verify Installation
-  ```
-  Go to that directory and run
-  ./argocd version
-  ``` 
-  5. Login via CLI
-
-  6. Get the external IP of the ArgoCD server:
-  ```
-  kubectl get svc argocd-server -n argocd
-  ```
-  7. Retrieve the ArgoCD admin password:
-  ```
-  kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 --decode
-  ```
-  8. Login to ArgoCD using the CLI:
-
-  ```
-  ./argocd login <EXTERNAL-IP> --username admin --password <retrieved-password> --insecure
-
-  For example:
-  ./argocd login addd75cd2dd3d4b55916098dcfea3af0-887731146.us-east-1.elb.amazonaws.com --username admin --password NqxzqOnsF8oUbRtz --insecure
-  ```
-  9. Verify Connection
-
-  ```
-  argocd cluster list
-  ```
-
-### Step 5. Setup Sync with ArgoCD
-
-#### If repo is private, below steps needs to be completed to setup connectivity, if public repo, direct sync will work
-
-1. Generate SSH key for argocd
-``` ssh-keygen -t rsa -b 4096 -C "argocd-access" -f ~/.ssh/argocd -N "" ```
-
-This generate keys at
-
-* ~/.ssh/argocd (private key)
-
-* ~/.ssh/argocd.pub (public key)
-
-2. Add the Public Key to GitHub
-
-* Go to GitHub → Your Repo → Settings → Deploy Keys
-
-* Click "Add deploy key", give it a name like ArgoCD Access, and paste the contents of argocd.pub.
-
-* Check Allow write access if you want ArgoCD to push changes (usually not needed).
-
-* Click Add key.
-
-3. Add the Repo to ArgoCD
-
-Run the following command to add your repo to ArgoCD:
-``` argocd repo add git@github.com:aveeva-devops/projects.git --ssh-private-key-path ~/.ssh/argocd ```
-
-If your ArgoCD instance is running inside Kubernetes, copy the private key to the ArgoCD secret:
-
-``` kubectl create secret generic argocd-ssh-key --from-file=ssh-privatekey=/c/Users/chaha/.ssh/argocd -n argocd ```
-
-Then patch ArgoCD to use this key:
-``` kubectl patch secret argocd-ssh-key \
-  -p '{"metadata":{"annotations":{"argocd.argoproj.io/ssh-known-hosts": "true"}}}' \
-  -n argocd
-```
-
-### Step 6. Give permission to ArgoCD service Account on the cluster
+### Step 4. Give permission to ArgoCD service Account on the cluster
 If your ArgoCD instance uses RBAC, check current roles:
 
 ```
@@ -197,7 +111,7 @@ kubectl create clusterrolebinding argocd-admin \
   --serviceaccount=argocd:argocd-application-controller
 ```
 
-### Step 7. Project 1 
+### Step 6. Project 1 
 Create an application on argocd to deploy the following docker image hello-world-api with 3 replicas
 and have the service properly exposed.
 https://hub.docker.com/r/nmatsui/hello-world-api
@@ -220,9 +134,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:aveeva-devops/projects.git
+    repoURL: https://github.com/chahalvikas2022/EKS_Projects.git
     targetRevision: HEAD
-    path: kubernetes/EKS-ArgoCD/app1
+    path: app1
   destination: 
     server: https://kubernetes.default.svc
     namespace: demo
@@ -310,7 +224,7 @@ Validate service output
 
 ``` curl http://service_endpoint ```
 
-### Step 8. Project 2  
+### Step 7. Project 2  
 Create another application on argocd using the same docker image hello-world-api with 3 replicas
 and have the service properly exposed.
 https://hub.docker.com/r/nmatsui/hello-world-api
@@ -333,9 +247,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:aveeva-devops/projects.git
+    repoURL: https://github.com/chahalvikas2022/EKS_Projects.git
     targetRevision: HEAD
-    path: kubernetes/EKS-ArgoCD/app2
+    path: app2
   destination: 
     server: https://kubernetes.default.svc
     namespace: demo
@@ -435,10 +349,9 @@ Validate service output
 
 ``` curl http://service_endpoint ```
 
-### Step 9. Project 3
+### Project 3
 Create a third argocd application so that the argocd is able to manage and sync itself for all future
 upgrades and configuration changes. 
 
-### Solution for Project 3
 
-Change replicas of any of above 2 manifests files and commit to validate if autosync is happening
+### Sync with ArgoCD
