@@ -9,7 +9,7 @@ metadata:
   name: hello-world-api
   namespace: podid
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: hello-world-api
